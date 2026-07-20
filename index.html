@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-section h2::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .status-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 4px solid #764ba2;
+            grid-column: 1 / -1;
+        }
+
+        .status-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .users-list {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            padding: 10px;
+            background: #f0f0f0;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-email {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .user-username {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .empty-message {
+            color: #999;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Authentication Service</h1>
+            <p>Secure User Management System</p>
+        </div>
+
+        <div class="content">
+            <!-- Register Form -->
+            <div class="form-section">
+                <h2>Register</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="reg_username">Username</label>
+                        <input type="text" id="reg_username" required placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg_email">Email</label>
+                        <input type="email" id="reg_email" required placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg_password">Password</label>
+                        <input type="password" id="reg_password" required placeholder="Enter password">
+                    </div>
+                    <button type="submit">Register</button>
+                    <div id="registerMsg" class="message"></div>
+                </form>
+            </div>
+
+            <!-- Login Form -->
+            <div class="form-section">
+                <h2>Login</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="login_email">Email</label>
+                        <input type="email" id="login_email" required placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="login_password">Password</label>
+                        <input type="password" id="login_password" required placeholder="Enter password">
+                    </div>
+                    <button type="submit">Login</button>
+                    <div id="loginMsg" class="message"></div>
+                </form>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div class="form-section">
+                <h2>Forgot Password</h2>
+                <form id="forgotForm">
+                    <div class="form-group">
+                        <label for="forgot_email">Email</label>
+                        <input type="email" id="forgot_email" required placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot_password">New Password</label>
+                        <input type="password" id="forgot_password" required placeholder="Enter new password">
+                    </div>
+                    <button type="submit">Reset Password</button>
+                    <div id="forgotMsg" class="message"></div>
+                </form>
+            </div>
+
+            <!-- Change Password Form -->
+            <div class="form-section">
+                <h2>Change Password</h2>
+                <form id="changeForm">
+                    <div class="form-group">
+                        <label for="change_email">Email</label>
+                        <input type="email" id="change_email" required placeholder="Enter email">
+                    </div>
+                    <div class="form-group">
+                        <label for="change_old_password">Old Password</label>
+                        <input type="password" id="change_old_password" required placeholder="Enter old password">
+                    </div>
+                    <div class="form-group">
+                        <label for="change_new_password">New Password</label>
+                        <input type="password" id="change_new_password" required placeholder="Enter new password">
+                    </div>
+                    <button type="submit">Change Password</button>
+                    <div id="changeMsg" class="message"></div>
+                </form>
+            </div>
+
+            <!-- Status Section -->
+            <div class="status-section">
+                <h2>📋 Registered Users</h2>
+                <div class="users-list" id="usersList">
+                    <div class="empty-message">No registered users yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        // Register
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('reg_username').value;
+            const email = document.getElementById('reg_email').value;
+            const password = document.getElementById('reg_password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await response.json();
+                showMessage('registerMsg', data.message);
+                if (data.message.includes('successfully')) {
+                    document.getElementById('registerForm').reset();
+                    updateUsersList();
+                }
+            } catch (error) {
+                showMessage('registerMsg', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login_email').value;
+            const password = document.getElementById('login_password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                showMessage('loginMsg', data.message);
+                if (data.message.includes('successful')) {
+                    document.getElementById('loginForm').reset();
+                }
+            } catch (error) {
+                showMessage('loginMsg', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        // Forgot Password
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot_email').value;
+            const newPassword = document.getElementById('forgot_password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/forgot`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, newPassword })
+                });
+                const data = await response.json();
+                showMessage('forgotMsg', data.message);
+                if (data.message.includes('successfully')) {
+                    document.getElementById('forgotForm').reset();
+                }
+            } catch (error) {
+                showMessage('forgotMsg', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        // Change Password
+        document.getElementById('changeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('change_email').value;
+            const oldPassword = document.getElementById('change_old_password').value;
+            const newPassword = document.getElementById('change_new_password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/change`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, oldPassword, newPassword })
+                });
+                const data = await response.json();
+                showMessage('changeMsg', data.message);
+                if (data.message.includes('successfully')) {
+                    document.getElementById('changeForm').reset();
+                }
+            } catch (error) {
+                showMessage('changeMsg', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        function showMessage(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'message ' + (message.includes('Error') ? 'error' : type);
+            setTimeout(() => {
+                element.className = 'message';
+            }, 5000);
+        }
+
+        function updateUsersList() {
+            // In a real application, you would fetch the users list from the server
+            // For now, this is a placeholder
+        }
+    </script>
+</body>
+</html>
